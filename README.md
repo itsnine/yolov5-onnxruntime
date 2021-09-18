@@ -1,5 +1,6 @@
 # yolov5-onnxruntime
-C++ YOLO v5 ONNXRuntime inference code.
+
+C++ YOLO v5 ONNXRuntime inference code. `Work in progress`...
 
 Dependecies: OpenCV 4.5.2, ONNXRuntime 1.8.1. (Tested only on Windows 10)
 

@@ -1,7 +1,16 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <onnxruntime_cxx_api.h>
+#include <codecvt>
 
+
+std::wstring charToWstring(const char* str)
+{
+    typedef std::codecvt_utf8<wchar_t> convert_type;
+    std::wstring_convert<convert_type, wchar_t> converter;
+
+    return converter.from_bytes(str);
+}
 
 size_t vectorProduct(std::vector<int64> vector)
 {
@@ -18,13 +27,17 @@ size_t vectorProduct(std::vector<int64> vector)
 
 int main(int argc, char* argv[])
 {
+    std::cout << "args: " << argc << std::endl;
     const float conf_threshold = 0.5f;
     const float iou_threshold = 0.4f;
     std::wstring modelPath = L"yolov5m.onnx";
     std::string imagePath = "./bus.jpg";
     int numClasses = 80;
-    if (argc > 1)
-        imagePath = argv[1];
+    if (argc == 3)
+    {
+        modelPath = charToWstring(argv[1]);
+        imagePath = argv[2];
+    }
 
     Ort::Env env(OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING, "ONNX_DETECTION");
     Ort::SessionOptions sessionOptions;

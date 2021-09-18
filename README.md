@@ -12,7 +12,10 @@ Run from CLI:
 yolov5_ort.exe yolov5m.onnx coco.names bus.jpg
 ```
 
-<center><a href="images/bus_result.jpg"><img src="images/bus_result.jpg" style="width:60%; height:60%;"/></a></center>
+<p align="center">
+  <a href="images/bus_result.jpg"><img src="images/bus_result.jpg" style="width:60%; height:60%;"/></a>
+</p>
+
 
 ## TODO
 - refactoring;

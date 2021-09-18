@@ -8,7 +8,7 @@ To run the executable you have to add OpenCV and ONNXRuntime DLL's to your envir
 
 Run from CLI:
 ```bash
-# yolov5_ort.exe path_to_onnx_model path_to class_names path_to_image
+# yolov5_ort.exe path_to_onnx_model path_to_class_names path_to_image
 yolov5_ort.exe yolov5m.onnx coco.names bus.jpg
 ```
 

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <opencv2/opencv.hpp>
 #include <onnxruntime_cxx_api.h>
 #include <codecvt>
@@ -10,6 +11,25 @@ std::wstring charToWstring(const char* str)
     std::wstring_convert<convert_type, wchar_t> converter;
 
     return converter.from_bytes(str);
+}
+
+std::vector<std::string> loadNames(const std::string& path) {
+  // load class names
+  std::vector<std::string> class_names;
+  std::ifstream infile(path);
+  if (infile.good()) {
+    std::string line;
+    while (getline (infile, line)) {
+      class_names.emplace_back(line);
+    }
+    infile.close();
+  }
+  else {
+    std::cerr << ">>> ERROR: Failed to access class name path: " << path
+              << "\n>>>\tDoes the file exist? Permission to read it?\n"; 
+  }
+
+  return class_names;
 }
 
 size_t vectorProduct(std::vector<int64> vector)
@@ -31,13 +51,20 @@ int main(int argc, char* argv[])
     const float conf_threshold = 0.5f;
     const float iou_threshold = 0.4f;
     std::wstring modelPath = L"yolov5m.onnx";
-    std::string imagePath = "./bus.jpg";
-    int numClasses = 80;
-    if (argc == 3)
+    std::string imagePath = "bus.jpg";
+    std::string classNamesPath = "coco.names";
+    size_t numClasses = 80;
+
+    if (argc == 4)
     {
         modelPath = charToWstring(argv[1]);
-        imagePath = argv[2];
+        classNamesPath = argv[2];
+        imagePath = argv[3];
     }
+
+    std::vector<std::string> classNames = loadNames(classNamesPath);
+    numClasses = classNames.size();
+    std::cout << "numClasses: " << numClasses << std::endl; 
 
     Ort::Env env(OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING, "ONNX_DETECTION");
     Ort::SessionOptions sessionOptions;
@@ -181,6 +208,15 @@ int main(int argc, char* argv[])
     {
         std::cout << "Conf: " << confs[idx] << "; classId: " << classIds[idx] << std::endl;
         cv::rectangle(image, boxes[idx], cv::Scalar(255, 255, 0), 2);
+
+        int x = boxes[idx].x;
+        int y = boxes[idx].y;
+        int w = boxes[idx].width;
+        int h = boxes[idx].height;
+
+        cv::rectangle(image, cv::Point(x, y - 15), cv::Point(x + w, y), cv::Scalar(255, 255, 0), -1);
+        int classId = classIds[idx];
+        cv::putText(image, classNames[classId], cv::Point(x, y), cv::FONT_HERSHEY_PLAIN, 1.5, (0, 0, 255), 2);
     }
 
 

@@ -24,3 +24,4 @@ yolov5_ort.exe yolov5m.onnx bus.jpg
 
 ## References
 - YOLO v5 repo: https://github.com/ultralytics/yolov5
+- YOLOv5 Runtime Stack repo: https://github.com/zhiqwang/yolov5-rt-stack

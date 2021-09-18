@@ -2,9 +2,11 @@
 
 C++ YOLO v5 ONNXRuntime inference code. `Work in progress`...
 
-Dependecies: OpenCV 4.5.2, ONNXRuntime 1.8.1. (Tested only on Windows 10)
+Dependecies: OpenCV 4.5.2, ONNXRuntime 1.8.1. (Tested only on Windows 10).
 
-To run from CLI:
+To run the executable you have to add OpenCV and ONNXRuntime DLL's to your environment path or put all needed DLL's near the executable.
+
+Run from CLI:
 ```bash
 # yolov5_ort.exe path_to_onnx_model path_to_image
 yolov5_ort.exe yolov5m.onnx bus.jpg

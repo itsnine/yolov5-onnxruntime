@@ -1,6 +1,6 @@
 # yolov5-onnxruntime
 
-C++ YOLO v5 ONNX Runtime inference code. `Work in progress`...
+C++ YOLO v5 ONNX Runtime inference code. `Work in progress...`
 
 Dependecies: CMake 3.16, OpenCV 4.5.2, ONNXRuntime 1.8.1. (Tested on Windows 10 and Ubuntu 20.04).
 
@@ -21,11 +21,11 @@ Run from CLI:
 ```bash
 # On Windows
 # yolov5_ort.exe path_to_onnx_model path_to_class_names path_to_image
-yolov5_ort.exe yolov5m.onnx coco.names bus.jpg
+yolov5_ort.exe ../models/yolov5m.onnx ../models/coco.names ../images/bus.jpg
 
 # On Linux
 # ./yolov5_ort path_to_onnx_model path_to_class_names path_to_image
-./yolov5_ort yolov5m.onnx coco.names bus.jpg
+./yolov5_ort ../models/yolov5m.onnx ../models/coco.names ../images/bus.jpg
 ```
 
 <p align="center">
@@ -34,13 +34,14 @@ yolov5_ort.exe yolov5m.onnx coco.names bus.jpg
 
 
 ## TODO
-- refactoring;
 - add C++ letterbox implementation and scaling;
+- add GPU support for inference;
+- add Python implementation of the project.
+- refactoring;
 - ~~add Linux compatibility~~;
 - ~~read class names from file~~;
 - ~~better visualization with class names and boxes~~;
 - ~~create YOLO class for easy deployment~~; 
-- add Python implementation of the project.
 
 ## References
 - YOLO v5 repo: https://github.com/ultralytics/yolov5

@@ -5,7 +5,7 @@ C++ YOLO v5 ONNXRuntime inference code. `Work in progress`...
 Dependecies: CMake 3.16, OpenCV 4.5.2, ONNXRuntime 1.8.1. (Tested on Windows 10 and Ubuntu 20.04).
 
 ## Build
-Before building the project you should manually change `ONNXRUNTIME_DIR` in `CMakeLists.txt` to your ONNXRuntime path, i.e. `"C:/onnxruntime-win-x64-1.8.1"` after that you should build with below command:
+Before building the project you should manually change `ONNXRUNTIME_DIR` in `CMakeLists.txt` to your ONNXRuntime path, i.e. `"C:/onnxruntime-win-x64-1.8.1"`, after that you should build with below command:
 
 ```bash
 cmake --build .

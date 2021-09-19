@@ -8,16 +8,11 @@
 int main(int argc, char* argv[])
 {
     std::cout << "args: " << argc << std::endl;
-    const float conf_threshold = 0.5f;
-    const float iou_threshold = 0.4f;
+    const float confThreshold = 0.5f;
+    const float iouThreshold = 0.4f;
     std::wstring modelPath = L"yolov5m.onnx";
     std::string imagePath = "bus.jpg";
     std::string classNamesPath = "coco.names";
-
-    std::vector<std::string> availableProviders = Ort::GetAvailableProviders();
-
-    for (const std::string& provider : availableProviders)
-        std::cout << provider << std::endl;
 
     if (argc == 4)
     {
@@ -31,7 +26,7 @@ int main(int argc, char* argv[])
     Yolov5Detector detector(modelPath, "gpu", cv::Size(640, 640));
 
     cv::Mat image = cv::imread(imagePath);
-    Detection result = detector.detect(image, conf_threshold, iou_threshold);
+    Detection result = detector.detect(image, confThreshold, iouThreshold);
 
     utils::visualizeDetection(image, result, classNames);
 

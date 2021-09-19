@@ -6,16 +6,12 @@ Yolov5Detector::Yolov5Detector(const std::string& modelPath, const std::string& 
     sessionOptions = Ort::SessionOptions();
     // sessionOptions.SetIntraOpNumThreads(4);
 
-    #if defined(_WIN32)
-    {
-        std::wstring w_modelPath = utils::charToWstring(modelPath.c_str());
-        session = Ort::Session(env, w_modelPath.c_str(), sessionOptions);
-    }
-    #else
-    {
-        session = Ort::Session(env, modelPath.c_str(), sessionOptions);
-    }
-    #endif
+#ifdef _WIN32
+    std::wstring w_modelPath = utils::charToWstring(modelPath.c_str());
+    session = Ort::Session(env, w_modelPath.c_str(), sessionOptions);
+#else
+    session = Ort::Session(env, modelPath.c_str(), sessionOptions);
+#endif
 
     if (device == "gpu" || device == "GPU" || device == "cuda" || device == "CUDA")
     {

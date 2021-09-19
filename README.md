@@ -20,9 +20,9 @@ yolov5_ort.exe yolov5m.onnx coco.names bus.jpg
 ## TODO
 - refactoring;
 - add C++ letterbox implementation and scaling;
-- read class names from file;
-- better visualization with class names and boxes;
-- create YOLO class for easy deployment; 
+- ~~read class names from file~~;
+- ~~better visualization with class names and boxes~~;
+- ~~create YOLO class for easy deployment~~; 
 - add Python implementation of the project.
 
 ## References

@@ -33,3 +33,7 @@
 
 build/
 .vscode/
+.vs/
+.idea/
+cmake-build-debug/
+_old.cpp

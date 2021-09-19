@@ -7,7 +7,12 @@ set(ONNXRUNTIME_DIR "C:/onnxruntime-win-x64-1.8.1")
 find_package(Threads REQUIRED)
 find_package(OpenCV REQUIRED)
 
-add_executable(yolov5_ort main.cpp)
+include_directories(include/)
+
+add_executable(yolov5_ort
+                main.cpp
+                src/detector.cpp
+                src/utils.cpp)
 
 
 set(CMAKE_CXX_STANDARD 20)

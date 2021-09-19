@@ -12,7 +12,7 @@ cmake --build .
 ```
 
 ## Run
-To run the executable you should add OpenCV and ONNXRuntime dll's (.so) to your environment path `or` put all needed dll's (.so) near the executable.
+To run the executable you should add OpenCV and ONNXRuntime libraries to your environment path `or` put all needed libraries near the executable.
 
 Run from CLI:
 ```bash

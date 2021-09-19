@@ -18,6 +18,8 @@ std::vector<std::string> utils::loadNames(const std::string& path)
         std::string line;
         while (getline (infile, line))
         {
+            if (line.back() == '\r')
+                line.pop_back();
             class_names.emplace_back(line);
         }
         infile.close();
@@ -54,12 +56,14 @@ void utils::visualizeDetection(cv::Mat& image, Detection &detection, std::vector
         int w = detection.boxes[i].width;
         // int h = boxes[idx].height;
 
-        cv::rectangle(image, cv::Point(x, y - 25), cv::Point(x + w, y), cv::Scalar(229, 160, 21), -1);
-
-        int classId = detection.classIds[i];
-
         int conf = (int)(detection.confs[i] * 100);
+        int classId = detection.classIds[i];
         std::string label = classNames[classId] + " 0." + std::to_string(conf);
-        cv::putText(image, label, cv::Point(x, y - 5), cv::FONT_ITALIC, 0.8, cv::Scalar(255, 255, 255), 2);
+
+        int baseline = 0;
+        cv::Size size = cv::getTextSize(label, cv::FONT_ITALIC, 0.8, 2, &baseline);
+        cv::rectangle(image, cv::Point(x, y - 25), cv::Point(x + size.width, y), cv::Scalar(229, 160, 21), -1);
+        
+        cv::putText(image, label, cv::Point(x, y - 3), cv::FONT_ITALIC, 0.8, cv::Scalar(255, 255, 255), 2);
     }
 }

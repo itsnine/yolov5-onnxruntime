@@ -10,13 +10,14 @@ int main(int argc, char* argv[])
     std::cout << "args: " << argc << std::endl;
     const float confThreshold = 0.5f;
     const float iouThreshold = 0.4f;
-    std::wstring modelPath = L"yolov5m.onnx";
+
+    std::string modelPath = "yolov5m.onnx";
     std::string imagePath = "bus.jpg";
     std::string classNamesPath = "coco.names";
 
     if (argc == 4)
     {
-        modelPath = utils::charToWstring(argv[1]);
+        modelPath = argv[1];
         classNamesPath = argv[2];
         imagePath = argv[3];
     }
@@ -34,7 +35,6 @@ int main(int argc, char* argv[])
 
     cv::imwrite("result.jpg", image);
     cv::waitKey(0);
-
 
     return 0;
 }

@@ -10,7 +10,7 @@
 class Yolov5Detector
 {
 public:
-    Yolov5Detector(const std::wstring& modelPath,
+    Yolov5Detector(const std::string& modelPath,
                    const std::string& device,
                    const cv::Size& inputSize);
     Detection detect(cv::Mat& image, float confThreshold, float iouThreshold);

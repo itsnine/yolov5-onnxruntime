@@ -1,11 +1,21 @@
 #include "detector.h"
 
-Yolov5Detector::Yolov5Detector(const std::wstring& modelPath, const std::string& device = "gpu", const cv::Size& inputSize = cv::Size(640, 640))
+Yolov5Detector::Yolov5Detector(const std::string& modelPath, const std::string& device = "cpu", const cv::Size& inputSize = cv::Size(640, 640))
 {
     env = Ort::Env(OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING, "ONNX_DETECTION");
     sessionOptions = Ort::SessionOptions();
     // sessionOptions.SetIntraOpNumThreads(4);
-    session = Ort::Session(env, modelPath.c_str(), sessionOptions);
+
+    #if defined(_WIN32)
+    {
+        std::wstring w_modelPath = utils::charToWstring(modelPath.c_str());
+        session = Ort::Session(env, w_modelPath.c_str(), sessionOptions);
+    }
+    #else
+    {
+        session = Ort::Session(env, modelPath.c_str(), sessionOptions);
+    }
+    #endif
 
     if (device == "gpu" || device == "GPU" || device == "cuda" || device == "CUDA")
     {

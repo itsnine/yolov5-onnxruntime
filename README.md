@@ -35,7 +35,7 @@ yolov5_ort.exe ../models/yolov5m.onnx ../models/coco.names ../images/bus.jpg
 
 ## TODO
 - add C++ letterbox implementation and scaling;
-- add GPU support for inference;
+- add device selection for inference;
 - add Python implementation of the project.
 - refactoring;
 - ~~add Linux compatibility~~;

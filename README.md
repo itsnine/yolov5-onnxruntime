@@ -20,6 +20,7 @@ yolov5_ort.exe yolov5m.onnx coco.names bus.jpg
 ## TODO
 - refactoring;
 - add C++ letterbox implementation and scaling;
+- test on Linux;
 - ~~read class names from file~~;
 - ~~better visualization with class names and boxes~~;
 - ~~create YOLO class for easy deployment~~; 
@@ -28,3 +29,4 @@ yolov5_ort.exe yolov5m.onnx coco.names bus.jpg
 ## References
 - YOLO v5 repo: https://github.com/ultralytics/yolov5
 - YOLOv5 Runtime Stack repo: https://github.com/zhiqwang/yolov5-rt-stack
+- ONNXRuntime Inference examples: https://github.com/microsoft/onnxruntime-inference-examples

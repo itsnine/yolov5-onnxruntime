@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(yolov5_ort VERSION 0.1.0)
 
-set(ONNXRUNTIME_DIR "C:/onnxruntime-win-x64-1.8.1")
+option(ONNXRUNTIME_DIR "Path to built ONNX Runtime directory." STRING)
 message(STATUS "ONNXRUNTIME_DIR: ${ONNXRUNTIME_DIR}")
 
 find_package(OpenCV REQUIRED)

@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
 
     std::vector<std::string> classNames = utils::loadNames(classNamesPath);
 
-    Yolov5Detector detector(modelPath, "gpu", cv::Size(640, 640));
+    Yolov5Detector detector(modelPath, "cpu", cv::Size(640, 640));
 
     cv::Mat image = cv::imread(imagePath);
     Detection result = detector.detect(image, confThreshold, iouThreshold);

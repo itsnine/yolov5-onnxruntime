@@ -55,8 +55,11 @@ void utils::visualizeDetection(cv::Mat& image, Detection &detection, std::vector
         // int h = boxes[idx].height;
 
         cv::rectangle(image, cv::Point(x, y - 25), cv::Point(x + w, y), cv::Scalar(229, 160, 21), -1);
+
         int classId = detection.classIds[i];
 
-        cv::putText(image, classNames[classId], cv::Point(x, y - 5), cv::FONT_ITALIC, 0.8, cv::Scalar(255, 255, 255), 2);
+        int conf = (int)(detection.confs[i] * 100);
+        std::string label = classNames[classId] + " 0." + std::to_string(conf);
+        cv::putText(image, label, cv::Point(x, y - 5), cv::FONT_ITALIC, 0.8, cv::Scalar(255, 255, 255), 2);
     }
 }

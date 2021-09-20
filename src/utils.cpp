@@ -53,8 +53,6 @@ void utils::visualizeDetection(cv::Mat& image, Detection &detection, std::vector
 
         int x = detection.boxes[i].x;
         int y = detection.boxes[i].y;
-        int w = detection.boxes[i].width;
-        // int h = boxes[idx].height;
 
         int conf = (int)(detection.confs[i] * 100);
         int classId = detection.classIds[i];

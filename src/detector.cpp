@@ -43,6 +43,22 @@ Yolov5Detector::Yolov5Detector(const std::string& modelPath, const std::string& 
 
 }
 
+std::tuple<float, int> Yolov5Detector::getBestClassInfo(std::vector<float>::iterator it)
+{
+    int idxMax = 5;
+    float maxConf = 0;
+
+    for (int i = 5; i < this->numClasses + 5; i++)
+    {
+        if (it[i] > maxConf)
+        {
+            maxConf = it[i];
+            idxMax = i - 5;
+        }
+    }
+    return std::make_tuple(maxConf, idxMax);
+}
+
 cv::Mat Yolov5Detector::preprocessing(cv::Mat &image)
 {
     cv::Mat blob = cv::dnn::blobFromImage(image,
@@ -64,26 +80,11 @@ Detection Yolov5Detector::postprocessing(cv::Mat& image, std::vector<float> &out
     float w_scale = (float)image.cols / (float)this->inputImageSize.width;
     float h_scale = (float)image.rows / (float)this->inputImageSize.height;
 
-    auto getClassId = [=](std::vector<float>::iterator it){
-        int idxMax = 5;
-        float maxConf = 0;
-
-        for (int i = 5; i < this->numClasses + 5; i++)
-        {
-            if (it[i] > maxConf)
-            {
-                maxConf = it[i];
-                idxMax = i - 5;
-            }
-        }
-        return idxMax;
-    };
-
     for (auto it = outputTensorValues.begin(); it != outputTensorValues.end(); it += (numClasses + 5))
     {
-        float confidence = it[4];
+        float clsConf = it[4];
 
-        if (confidence > confThreshold)
+        if (clsConf > confThreshold)
         {
             int centerX = (int)(it[0] * w_scale);
             int centerY = (int)(it[1] * h_scale);
@@ -91,7 +92,11 @@ Detection Yolov5Detector::postprocessing(cv::Mat& image, std::vector<float> &out
             int height = (int)(it[3] * h_scale);
             int left = centerX - width / 2;
             int top = centerY - height / 2;
-            int classId = getClassId(it);
+
+            std::tuple<float, int> bestClassInfo = this->getBestClassInfo(it);
+            float objConf = std::get<0>(bestClassInfo);
+            int classId = std::get<1>(bestClassInfo);
+            float confidence = clsConf * objConf;
 
             boxes.emplace_back(left, top, width, height);
             confs.emplace_back(confidence);

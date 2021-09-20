@@ -22,6 +22,7 @@ private:
 
     cv::Mat preprocessing(cv::Mat& image);
     Detection postprocessing(cv::Mat& image, std::vector<float> &outputTensorValues, float confThreshold, float iouThreshold);
+    std::tuple<float, int> getBestClassInfo(std::vector<float>::iterator it);
 
     int numClasses;
     std::vector<const char*> inputNames;

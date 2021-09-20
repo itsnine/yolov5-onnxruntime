@@ -8,7 +8,7 @@
 int main(int argc, char* argv[])
 {
     std::cout << "args: " << argc << std::endl;
-    const float confThreshold = 0.5f;
+    const float confThreshold = 0.4f;
     const float iouThreshold = 0.4f;
 
     std::string modelPath = "yolov5m.onnx";

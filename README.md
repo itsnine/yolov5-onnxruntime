@@ -21,13 +21,12 @@ To run the executable you should add OpenCV and ONNX Runtime libraries to your e
 
 Run from CLI:
 ```bash
-# On Windows
-# yolov5_ort.exe path_to_onnx_model path_to_class_names path_to_image
-yolov5_ort.exe ../models/yolov5m.onnx ../models/coco.names ../images/bus.jpg
-
 # On Linux
 # ./yolov5_ort path_to_onnx_model path_to_class_names path_to_image
 ./yolov5_ort ../models/yolov5m.onnx ../models/coco.names ../images/bus.jpg
+
+# On Windows
+yolov5_ort.exe ../models/yolov5m.onnx ../models/coco.names ../images/bus.jpg
 ```
 
 ## Demo

@@ -30,8 +30,13 @@ yolov5_ort.exe ../models/yolov5m.onnx ../models/coco.names ../images/bus.jpg
 ./yolov5_ort ../models/yolov5m.onnx ../models/coco.names ../images/bus.jpg
 ```
 
+## Demo
+
 <p align="center">
   <a href="images/bus_result.jpg"><img src="images/bus_result.jpg" style="width:60%; height:60%;"/></a>
+</p>
+<p align="center">
+  <a href="images/zidane_result.jpg"><img src="images/zidane_result.jpg" style="width:60%; height:60%;"/></a>
 </p>
 
 

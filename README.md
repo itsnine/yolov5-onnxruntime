@@ -40,7 +40,8 @@ Run from CLI:
 
 ## TODO
 - refactoring;
-- add Python implementation of the project.
+- add Python implementation of the project;
+- ~~add dynamic input shape inference~~;
 - ~~add C++ letterbox implementation and scaling~~;
 - ~~add device selection for inference~~;
 - ~~add Linux compatibility~~;

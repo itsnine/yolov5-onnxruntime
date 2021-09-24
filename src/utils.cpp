@@ -1,5 +1,6 @@
 #include "utils.h"
 
+
 size_t utils::vectorProduct(const std::vector<int64_t>& vector)
 {
     if (vector.empty())
@@ -89,8 +90,8 @@ void utils::letterbox(const cv::Mat& image, cv::Mat& outImage,
 
     if (auto_)
     {
-        dw = (float)(newShape.width % stride);
-        dh = (float)(newShape.height % stride);
+        dw = (float)std::remainder(dw, stride);
+        dh = (float)std::remainder(dh, stride);
     }
     else if (scaleFill)
     {

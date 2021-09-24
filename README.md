@@ -2,7 +2,10 @@
 
 C++ YOLO v5 ONNX Runtime inference code. `Work in progress...`
 
-Dependecies: CMake 3.16, OpenCV 4.5.2, ONNXRuntime 1.8.1. (Tested on Windows 10 and Ubuntu 20.04).
+## Dependecies:
+- OpenCV 4.5+
+- ONNXRuntime 1.7+
+- OS: Windows 10 or Ubuntu 20.04
 
 ## Build
 To build the project you should run the following commands, don't forget to change `ONNXRUNTIME_DIR` cmake option:
@@ -10,23 +13,19 @@ To build the project you should run the following commands, don't forget to chan
 ```bash
 mkdir build
 cd build
-cmake -DONNXRUNTIME_DIR=path_to_onnxruntime ..
+cmake .. -DONNXRUNTIME_DIR=path_to_onnxruntime
 cmake --build .
 ```
 
 ## Run
-Before running the executable you should convert you PyTorch model to ONNX if you haven't done it yet. Check the official tutorial on it here: https://github.com/ultralytics/yolov5/issues/251
+Before running the executable you should convert you PyTorch model to ONNX if you haven't done it yet. Check the [official tutorial](https://github.com/ultralytics/yolov5/issues/251).
 
 To run the executable you should add OpenCV and ONNX Runtime libraries to your environment path `or` put all needed libraries near the executable.
 
 Run from CLI:
 ```bash
-# On Linux
 # ./yolov5_ort path_to_onnx_model path_to_class_names path_to_image
-./yolov5_ort ../models/yolov5m.onnx ../models/coco.names ../images/bus.jpg
-
-# On Windows
-yolov5_ort.exe ../models/yolov5m.onnx ../models/coco.names ../images/bus.jpg
+./yolov5_ort ../models/yolov5.onnx ../models/coco.names ../images/bus.jpg
 ```
 
 ## Demo
@@ -40,10 +39,10 @@ yolov5_ort.exe ../models/yolov5m.onnx ../models/coco.names ../images/bus.jpg
 
 
 ## TODO
-- add C++ letterbox implementation and scaling;
-- add device selection for inference;
-- add Python implementation of the project.
 - refactoring;
+- add Python implementation of the project.
+- ~~add C++ letterbox implementation and scaling~~;
+- ~~add device selection for inference~~;
 - ~~add Linux compatibility~~;
 - ~~read class names from file~~;
 - ~~better visualization with class names and boxes~~;

@@ -1,10 +1,28 @@
 #include "detector.h"
 
-Yolov5Detector::Yolov5Detector(const std::string& modelPath, const std::string& device = "cpu", const cv::Size& inputSize = cv::Size(640, 640))
+Yolov5Detector::Yolov5Detector(const std::string& modelPath, const bool& isGPU = true, const cv::Size& inputSize = cv::Size(640, 640))
 {
     env = Ort::Env(OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING, "ONNX_DETECTION");
     sessionOptions = Ort::SessionOptions();
-    // sessionOptions.SetIntraOpNumThreads(4);
+
+    std::vector<std::string> availableProviders = Ort::GetAvailableProviders();
+    auto cudaAvailable = std::find(availableProviders.begin(), availableProviders.end(), "CUDAExecutionProvider");
+    OrtCUDAProviderOptions cudaOption;
+
+    if (isGPU && (cudaAvailable == availableProviders.end()))
+    {
+        std::cout << "GPU is not supported by your ONNXRuntime build. Fallback to CPU." << std::endl;
+        std::cout << "Inference device: CPU" << std::endl;
+    }
+    else if (isGPU && (cudaAvailable != availableProviders.end()))
+    {
+        std::cout << "Inference device: GPU" << std::endl;
+        sessionOptions.AppendExecutionProvider_CUDA(cudaOption);
+    }
+    else
+    {
+        std::cout << "Inference device: CPU" << std::endl;
+    }
 
 #ifdef _WIN32
     std::wstring w_modelPath = utils::charToWstring(modelPath.c_str());
@@ -13,89 +31,111 @@ Yolov5Detector::Yolov5Detector(const std::string& modelPath, const std::string& 
     session = Ort::Session(env, modelPath.c_str(), sessionOptions);
 #endif
 
-    if (device == "gpu" || device == "GPU" || device == "cuda" || device == "CUDA")
-    {
-        // TODO
-    }
     Ort::AllocatorWithDefaultOptions allocator;
 
     Ort::TypeInfo inputTypeInfo = session.GetInputTypeInfo(0);
-    auto inputTensorInfo = inputTypeInfo.GetTensorTypeAndShapeInfo();
+    std::vector<int64_t> inputTensorShape = inputTypeInfo.GetTensorTypeAndShapeInfo().GetShape();
+    this->isDynamicInputShape = false;
+    // checking if width and height are dynamic
+    if (inputTensorShape[2] == -1 && inputTensorShape[3] == -1)
+    {
+        std::cout << "Dynamic input shape" << std::endl;
+        this->isDynamicInputShape = true;
+    }
 
-    inputDims = inputTensorInfo.GetShape();
+    for (auto shape : inputTensorShape)
+        std::cout << "Input shape: " << shape << std::endl;
 
-    for (int64_t inputDim : inputDims)
-        std::cout << "Input Dimensions: " << inputDim << std::endl;
+    inputNames.push_back(session.GetInputName(0, allocator));
+    outputNames.push_back(session.GetOutputName(0, allocator));
 
-    const char* inputName = session.GetInputName(0, allocator);
-    const char* outputName = session.GetOutputName(0, allocator);
-    std::cout << "Output Name: " << outputName << std::endl;
+    std::cout << "Input name: " << inputNames[0] << std::endl;
+    std::cout << "Output name: " << outputNames[0] << std::endl;
 
-    Ort::TypeInfo outputTypeInfo = session.GetOutputTypeInfo(0);
-    auto outputTensorInfo = outputTypeInfo.GetTensorTypeAndShapeInfo();
-
-    outputDims = outputTensorInfo.GetShape();
-    this->numClasses = (int)(outputDims.back()) - 5;
-    this->inputImageSize = inputSize;
-
-    inputNames.push_back(inputName);
-    outputNames.push_back(outputName);
-
+    this->inputImageShape = cv::Size2f(inputSize);
 }
 
-std::tuple<float, int> Yolov5Detector::getBestClassInfo(std::vector<float>::iterator it)
+void Yolov5Detector::getBestClassInfo(std::vector<float>::iterator it, const int& numClasses,
+                                      float& bestConf, int& bestClassId)
 {
-    int idxMax = 5;
-    float maxConf = 0;
+    // first 5 element are box and obj confidence
+    bestClassId = 5;
+    bestConf = 0;
 
-    for (int i = 5; i < this->numClasses + 5; i++)
+    for (int i = 5; i < numClasses + 5; i++)
     {
-        if (it[i] > maxConf)
+        if (it[i] > bestConf)
         {
-            maxConf = it[i];
-            idxMax = i - 5;
+            bestConf = it[i];
+            bestClassId = i - 5;
         }
     }
-    return std::make_tuple(maxConf, idxMax);
+
 }
 
-cv::Mat Yolov5Detector::preprocessing(cv::Mat &image)
+void Yolov5Detector::preprocessing(cv::Mat &image, float*& blob, std::vector<int64_t>& inputTensorShape)
 {
-    cv::Mat blob = cv::dnn::blobFromImage(image,
-                                          1 / 255.,
-                                          this->inputImageSize,
-                                          cv::Scalar(0, 0, 0),
-                                          true,
-                                          false,
-                                          CV_32F);
-    return  blob;
+    cv::Mat resizedImage, floatImage;
+    cv::cvtColor(image, resizedImage, cv::COLOR_BGR2RGB);
+    utils::letterbox(image, resizedImage, this->inputImageShape,
+                     cv::Scalar(114, 114, 114), this->isDynamicInputShape,
+                     false, true, 32);
+
+    inputTensorShape[2] = resizedImage.rows;
+    inputTensorShape[3] = resizedImage.cols;
+
+    resizedImage.convertTo(floatImage, CV_32FC3, 1 / 255.0);
+    blob = new float[floatImage.cols * floatImage.rows * floatImage.channels()];
+    cv::Size floatImageSize {floatImage.cols, floatImage.rows};
+
+    // hwc -> chw
+    std::vector<cv::Mat> chw(floatImage.channels());
+    for (int i = 0; i < floatImage.channels(); ++i)
+    {
+        chw[i] = cv::Mat(floatImageSize, CV_32FC1, blob + i * floatImageSize.width * floatImageSize.height);
+    }
+    cv::split(floatImage, chw);
 }
 
-Detection Yolov5Detector::postprocessing(cv::Mat& image, std::vector<float> &outputTensorValues,
-                                         float confThreshold, float iouThreshold)
+std::vector<Detection> Yolov5Detector::postprocessing(const cv::Size& resizedImageShape,
+                                                      const cv::Size& originalImageShape,
+                                                      std::vector<Ort::Value>& outputTensors,
+                                                      const float& confThreshold, const float& iouThreshold)
 {
     std::vector<cv::Rect> boxes;
     std::vector<float> confs;
     std::vector<int> classIds;
-    float w_scale = (float)image.cols / (float)this->inputImageSize.width;
-    float h_scale = (float)image.rows / (float)this->inputImageSize.height;
 
-    for (auto it = outputTensorValues.begin(); it != outputTensorValues.end(); it += (numClasses + 5))
+    auto* rawOutput = outputTensors[0].GetTensorData<float>();
+    std::vector<int64_t> outputShape = outputTensors[0].GetTensorTypeAndShapeInfo().GetShape();
+    size_t count = outputTensors[0].GetTensorTypeAndShapeInfo().GetElementCount();
+    std::vector<float> output(rawOutput, rawOutput + count);
+
+    for (const int64_t& shape : outputShape)
+        std::cout << "Output Shape: " << shape << std::endl;
+
+    // first 5 elements are box[4] and obj confidence
+    int numClasses = (int)outputShape[2] - 5;
+    int elementsInBatch = (int)(outputShape[1] * outputShape[2]);
+
+    // only for batch size = 1
+    for (auto it = output.begin(); it != output.begin() + elementsInBatch; it += outputShape[2])
     {
         float clsConf = it[4];
 
         if (clsConf > confThreshold)
         {
-            int centerX = (int)(it[0] * w_scale);
-            int centerY = (int)(it[1] * h_scale);
-            int width = (int)(it[2] * w_scale);
-            int height = (int)(it[3] * h_scale);
+            int centerX = (int) (it[0]);
+            int centerY = (int) (it[1]);
+            int width = (int) (it[2]);
+            int height = (int) (it[3]);
             int left = centerX - width / 2;
             int top = centerY - height / 2;
 
-            std::tuple<float, int> bestClassInfo = this->getBestClassInfo(it);
-            float objConf = std::get<0>(bestClassInfo);
-            int classId = std::get<1>(bestClassInfo);
+            float objConf;
+            int classId;
+            this->getBestClassInfo(it, numClasses, objConf, classId);
+
             float confidence = clsConf * objConf;
 
             boxes.emplace_back(left, top, width, height);
@@ -108,55 +148,54 @@ Detection Yolov5Detector::postprocessing(cv::Mat& image, std::vector<float> &out
     cv::dnn::NMSBoxes(boxes, confs, confThreshold, iouThreshold, indices);
     std::cout << "amount of NMS indices: " << indices.size() << std::endl;
 
-    std::vector<cv::Rect> finalBoxes;
-    std::vector<float> finalConfs;
-    std::vector<int> finalClassIds;
+    std::vector<Detection> detections;
+
     for (int idx : indices)
     {
-        finalBoxes.emplace_back(boxes[idx]);
-        finalConfs.emplace_back(confs[idx]);
-        finalClassIds.emplace_back((classIds[idx]));
+        Detection det;
+        det.box = cv::Rect(boxes[idx]);
+        utils::scaleCoords(resizedImageShape, det.box, originalImageShape);
+
+        det.conf = confs[idx];
+        det.classId = classIds[idx];
+        detections.emplace_back(det);
     }
 
-    return {finalBoxes, finalConfs, finalClassIds};
-
+    return detections;
 }
 
-Detection Yolov5Detector::detect(cv::Mat &image, float confThreshold, float iouThreshold)
+std::vector<Detection> Yolov5Detector::detect(cv::Mat &image, const float& confThreshold = 0.4,
+                                              const float& iouThreshold = 0.45)
 {
-    cv::Mat blob = this->preprocessing(image);
+    float *blob = nullptr;
+    std::vector<int64_t> inputTensorShape {1, 3, 640, 640};
+    this->preprocessing(image, blob, inputTensorShape);
 
-    size_t inputTensorSize = utils::vectorProduct(inputDims);
-    size_t outputTensorSize = utils::vectorProduct(outputDims);
+    size_t inputTensorSize = utils::vectorProduct(inputTensorShape);
     std::cout << "inputTensorSize: " << inputTensorSize << std::endl;
-    std::cout << "outputTensorSize: " << outputTensorSize << std::endl;
+    std::vector<float> inputTensorValues(blob, blob + inputTensorSize);
 
-    std::vector<float> inputTensorValues(inputTensorSize);
-    std::vector<float> outputTensorValues(outputTensorSize);
-    inputTensorValues.assign(blob.begin<float>(),
-                             blob.end<float>());
-
-    // TODO: vector of blobs for batch_size > 1, mb blobFromImages
     std::vector<Ort::Value> inputTensors;
-    std::vector<Ort::Value> outputTensors;
 
     Ort::MemoryInfo memoryInfo = Ort::MemoryInfo::CreateCpu(
             OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
 
     inputTensors.push_back(Ort::Value::CreateTensor<float>(
             memoryInfo, inputTensorValues.data(), inputTensorSize,
-            inputDims.data(), inputDims.size()
+            inputTensorShape.data(), inputTensorShape.size()
     ));
 
-    outputTensors.push_back(Ort::Value::CreateTensor<float>(
-            memoryInfo, outputTensorValues.data(), outputTensorSize,
-            outputDims.data(), outputDims.size()
-    ));
+    std::vector<Ort::Value> outputTensors = this->session.Run(Ort::RunOptions{nullptr},
+                                                              inputNames.data(),
+                                                              inputTensors.data(),
+                                                              1,
+                                                              outputNames.data(),
+                                                              1);
 
-    this->session.Run(Ort::RunOptions{nullptr}, inputNames.data(),
-                      inputTensors.data(), 1, outputNames.data(),
-                      outputTensors.data(), 1);
+    cv::Size resizedShape = cv::Size((int)inputTensorShape[3], (int)inputTensorShape[2]);
+    std::vector<Detection> result = this->postprocessing(resizedShape, image.size(), outputTensors, confThreshold, iouThreshold);
 
-    Detection result = this->postprocessing(image, outputTensorValues, confThreshold, iouThreshold);
+    delete[] blob;
+
     return result;
 }

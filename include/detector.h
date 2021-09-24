@@ -1,7 +1,6 @@
 #pragma once
 #include <opencv2/opencv.hpp>
 #include <onnxruntime_cxx_api.h>
-#include <cpu_provider_factory.h>
 #include <utility>
 
 #include "utils.h"
@@ -10,25 +9,30 @@
 class Yolov5Detector
 {
 public:
+    explicit Yolov5Detector(std::nullptr_t) {};
     Yolov5Detector(const std::string& modelPath,
-                   const std::string& device,
+                   const bool& isGPU,
                    const cv::Size& inputSize);
-    Detection detect(cv::Mat& image, float confThreshold, float iouThreshold);
+
+    std::vector<Detection> detect(cv::Mat &image, const float& confThreshold, const float& iouThreshold);
 
 private:
     Ort::Env env{nullptr};
     Ort::SessionOptions sessionOptions{nullptr};
     Ort::Session session{nullptr};
 
-    cv::Mat preprocessing(cv::Mat& image);
-    Detection postprocessing(cv::Mat& image, std::vector<float> &outputTensorValues, float confThreshold, float iouThreshold);
-    std::tuple<float, int> getBestClassInfo(std::vector<float>::iterator it);
+    void preprocessing(cv::Mat &image, float*& blob, std::vector<int64_t>& inputTensorShape);
+    std::vector<Detection> postprocessing(const cv::Size& resizedImageShape,
+                                          const cv::Size& originalImageShape,
+                                          std::vector<Ort::Value>& outputTensors,
+                                          const float& confThreshold, const float& iouThreshold);
 
-    int numClasses;
+    static void getBestClassInfo(std::vector<float>::iterator it, const int& numClasses,
+                                 float& bestConf, int& bestClassId);
+
     std::vector<const char*> inputNames;
     std::vector<const char*> outputNames;
-    std::vector<int64_t> outputDims;
-    std::vector<int64_t> inputDims;
-    cv::Size inputImageSize;
+    bool isDynamicInputShape{};
+    cv::Size2f inputImageShape;
 
 };

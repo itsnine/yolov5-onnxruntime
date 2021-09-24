@@ -6,31 +6,26 @@
 
 struct Detection
 {
-    std::vector<cv::Rect> boxes;
-    std::vector<float> confs;
-    std::vector<int> classIds;
-
-    Detection() = default;
-
-    Detection(std::vector<cv::Rect> boxes,
-              std::vector<float> confs,
-              std::vector<int> classIds)
-    {
-        this->boxes = std::move(boxes);
-        this->confs = std::move(confs);
-        this->classIds = std::move(classIds);
-    }
-
-    size_t size()
-    {
-        return classIds.size();
-    }
+    cv::Rect box;
+    float conf{};
+    int classId{};
 };
 
 namespace utils
 {
+    size_t vectorProduct(const std::vector<int64_t>& vector);
     std::wstring charToWstring(const char* str);
     std::vector<std::string> loadNames(const std::string& path);
-    size_t vectorProduct(const std::vector<int64>& vector);
-    void visualizeDetection(cv::Mat& image, Detection &detection, std::vector<std::string> classNames);
+    void visualizeDetection(cv::Mat& image, std::vector<Detection>& detections,
+                            const std::vector<std::string>& classNames);
+
+    void letterbox(const cv::Mat& image, cv::Mat& outImage,
+                   const cv::Size& newShape,
+                   const cv::Scalar& color,
+                   bool auto_,
+                   bool scaleFill,
+                   bool scaleUp,
+                   int stride);
+
+    void scaleCoords(const cv::Size& imageShape, cv::Rect& box, const cv::Size& imageOriginalShape);
 }

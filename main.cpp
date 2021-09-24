@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
     const float confThreshold = 0.4f;
     const float iouThreshold = 0.4f;
 
-    std::string modelPath = "yolov5m.onnx";
+    std::string modelPath = "yolov5s.onnx";
     std::string imagePath = "bus.jpg";
     std::string classNamesPath = "coco.names";
 
@@ -24,16 +24,16 @@ int main(int argc, char* argv[])
 
     std::vector<std::string> classNames = utils::loadNames(classNamesPath);
 
-    Yolov5Detector detector(modelPath, "cpu", cv::Size(640, 640));
+    Yolov5Detector detector(modelPath, "gpu", cv::Size(640, 640));
 
     cv::Mat image = cv::imread(imagePath);
-    Detection result = detector.detect(image, confThreshold, iouThreshold);
+    std::vector<Detection> result = detector.detect(image, confThreshold, iouThreshold);
 
     utils::visualizeDetection(image, result, classNames);
 
     cv::imshow("result", image);
 
-    cv::imwrite("result.jpg", image);
+    // cv::imwrite("result.jpg", image);
     cv::waitKey(0);
 
     return 0;

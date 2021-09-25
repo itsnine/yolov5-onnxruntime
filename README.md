@@ -6,6 +6,8 @@ C++ YOLO v5 ONNX Runtime inference code.
 - OpenCV 4.5+
 - ONNXRuntime 1.7+
 - OS: Windows 10 or Ubuntu 20.04
+- CUDA 11+ [Optional]
+
 
 ## Build
 To build the project you should run the following commands, don't forget to change `ONNXRUNTIME_DIR` cmake option:

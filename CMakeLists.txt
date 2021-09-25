@@ -9,7 +9,7 @@ find_package(OpenCV REQUIRED)
 include_directories("include/")
 
 add_executable(yolo_ort
-               main.cpp
+               src/example.cpp
                src/detector.cpp
                src/utils.cpp)
 

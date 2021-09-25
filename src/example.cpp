@@ -1,28 +1,29 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
+#include "cmdline.h"
 #include "utils.h"
 #include "detector.h"
 
 
 int main(int argc, char* argv[])
 {
-    std::cout << "args: " << argc << std::endl;
     const float confThreshold = 0.4f;
     const float iouThreshold = 0.4f;
 
-    std::string modelPath = "yolov5m.onnx";
-    std::string imagePath = "bus.jpg";
-    std::string classNamesPath = "coco.names";
+    cmdline::parser cmd;
+    cmd.add<std::string>("model_path", 'm', "Path to onnx model.", true, "yolov5.onnx");
+    cmd.add<std::string>("image", 'i', "Image source to be detected.", true, "bus.jpg");
+    cmd.add<std::string>("class_names", 'c', "Path to class names file.", true, "coco.names");
+    cmd.add("gpu", '\0', "Inference on cuda device.");
 
-    if (argc == 4)
-    {
-        modelPath = argv[1];
-        classNamesPath = argv[2];
-        imagePath = argv[3];
-    }
+    cmd.parse_check(argc, argv);
 
-    std::vector<std::string> classNames = utils::loadNames(classNamesPath);
+    bool isGPU = cmd.exist("gpu");
+    const std::string classNamesPath = cmd.get<std::string>("class_names");
+    const std::vector<std::string> classNames = utils::loadNames(classNamesPath);
+    const std::string imagePath = cmd.get<std::string>("image");
+    const std::string modelPath = cmd.get<std::string>("model_path");
 
     if (classNames.empty())
     {
@@ -36,7 +37,7 @@ int main(int argc, char* argv[])
 
     try
     {
-        detector = YOLODetector(modelPath, true, cv::Size(640, 640));
+        detector = YOLODetector(modelPath, isGPU, cv::Size(640, 640));
         std::cout << "Model was initialized." << std::endl;
     
         image = cv::imread(imagePath);

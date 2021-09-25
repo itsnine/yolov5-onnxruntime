@@ -28,4 +28,7 @@ namespace utils
                    int stride);
 
     void scaleCoords(const cv::Size& imageShape, cv::Rect& box, const cv::Size& imageOriginalShape);
+
+    template <typename T>
+    T clip(const T& n, const T& lower, const T& upper);
 }

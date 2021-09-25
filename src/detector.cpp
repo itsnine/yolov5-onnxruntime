@@ -1,6 +1,8 @@
 #include "detector.h"
 
-YOLODetector::YOLODetector(const std::string& modelPath, const bool& isGPU = true, const cv::Size& inputSize = cv::Size(640, 640))
+YOLODetector::YOLODetector(const std::string& modelPath,
+                           const bool& isGPU = true,
+                           const cv::Size& inputSize = cv::Size(640, 640))
 {
     env = Ort::Env(OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING, "ONNX_DETECTION");
     sessionOptions = Ort::SessionOptions();
@@ -193,7 +195,10 @@ std::vector<Detection> YOLODetector::detect(cv::Mat &image, const float& confThr
                                                               1);
 
     cv::Size resizedShape = cv::Size((int)inputTensorShape[3], (int)inputTensorShape[2]);
-    std::vector<Detection> result = this->postprocessing(resizedShape, image.size(), outputTensors, confThreshold, iouThreshold);
+    std::vector<Detection> result = this->postprocessing(resizedShape,
+                                                         image.size(),
+                                                         outputTensors,
+                                                         confThreshold, iouThreshold);
 
     delete[] blob;
 

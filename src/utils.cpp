@@ -46,7 +46,8 @@ std::vector<std::string> utils::loadNames(const std::string& path)
 }
 
 
-void utils::visualizeDetection(cv::Mat& image, std::vector<Detection>& detections, const std::vector<std::string>& classNames)
+void utils::visualizeDetection(cv::Mat& image, std::vector<Detection>& detections,
+                               const std::vector<std::string>& classNames)
 {
     for (const Detection& detection : detections)
     {
@@ -61,9 +62,13 @@ void utils::visualizeDetection(cv::Mat& image, std::vector<Detection>& detection
 
         int baseline = 0;
         cv::Size size = cv::getTextSize(label, cv::FONT_ITALIC, 0.8, 2, &baseline);
-        cv::rectangle(image, cv::Point(x, y - 25), cv::Point(x + size.width, y), cv::Scalar(229, 160, 21), -1);
+        cv::rectangle(image,
+                      cv::Point(x, y - 25), cv::Point(x + size.width, y),
+                      cv::Scalar(229, 160, 21), -1);
 
-        cv::putText(image, label, cv::Point(x, y - 3), cv::FONT_ITALIC, 0.8, cv::Scalar(255, 255, 255), 2);
+        cv::putText(image, label,
+                    cv::Point(x, y - 3), cv::FONT_ITALIC,
+                    0.8, cv::Scalar(255, 255, 255), 2);
     }
 }
 
@@ -132,9 +137,15 @@ void utils::scaleCoords(const cv::Size& imageShape, cv::Rect& coords, const cv::
     coords.width = (int) std::round(((float)coords.width / gain));
     coords.height = (int) std::round(((float)coords.height / gain));
 
-    // // clip coords
-    // coords.x = std::clamp(coords.x, 0, imageOriginalShape.width);
-    // coords.y = std::clamp(coords.y, 0, imageOriginalShape.height);
-    // coords.width = std::clamp(coords.width, 0, imageOriginalShape.width);
-    // coords.height = std::clamp(coords.height, 0, imageOriginalShape.height);
+    // // clip coords, should be modified for width and height
+    // coords.x = utils::clip(coords.x, 0, imageOriginalShape.width);
+    // coords.y = utils::clip(coords.y, 0, imageOriginalShape.height);
+    // coords.width = utils::clip(coords.width, 0, imageOriginalShape.width);
+    // coords.height = utils::clip(coords.height, 0, imageOriginalShape.height);
+}
+
+template <typename T>
+T utils::clip(const T& n, const T& lower, const T& upper)
+{
+    return std::max(lower, std::min(n, upper));
 }

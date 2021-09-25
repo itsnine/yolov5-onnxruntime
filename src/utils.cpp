@@ -77,7 +77,7 @@ void utils::letterbox(const cv::Mat& image, cv::Mat& outImage,
 {
     cv::Size shape = image.size();
     float r = std::min((float)newShape.height / (float)shape.height,
-                       (float)newShape.width / (float)newShape.width);
+                       (float)newShape.width / (float)shape.width);
     if (!scaleUp)
         r = std::min(r, 1.0f);
 
@@ -90,8 +90,8 @@ void utils::letterbox(const cv::Mat& image, cv::Mat& outImage,
 
     if (auto_)
     {
-        dw = (float)std::remainder(dw, stride);
-        dh = (float)std::remainder(dh, stride);
+        dw = (float)((int)dw % stride);
+        dh = (float)((int)dh % stride);
     }
     else if (scaleFill)
     {
@@ -126,14 +126,15 @@ void utils::scaleCoords(const cv::Size& imageShape, cv::Rect& coords, const cv::
     int pad[2] = {(int) (( (float)imageShape.width - (float)imageOriginalShape.width * gain) / 2.0f),
                   (int) (( (float)imageShape.height - (float)imageOriginalShape.height * gain) / 2.0f)};
 
-    coords.x = (int) ((float)(coords.x - pad[0]) / gain);
-    coords.width = (int) ((float)(coords.width - pad[0]) / gain);
-    coords.y = (int) ((float)(coords.y - pad[1]) / gain);
-    coords.height = (int) ((float)(coords.height - pad[1]) / gain);
+    coords.x = (int) std::round(((float)(coords.x - pad[0]) / gain));
+    coords.y = (int) std::round(((float)(coords.y - pad[1]) / gain));
 
-    // clip coords
-//    coords.x = std::clamp(coords.x, 0, imageOriginalShape.width);
-//    coords.y = std::clamp(coords.y, 0, imageOriginalShape.height);
-//    coords.width = std::clamp(coords.width, 0, imageOriginalShape.width);
-//    coords.height = std::clamp(coords.height, 0, imageOriginalShape.height);
+    coords.width = (int) std::round(((float)coords.width / gain));
+    coords.height = (int) std::round(((float)coords.height / gain));
+
+    // // clip coords
+    // coords.x = std::clamp(coords.x, 0, imageOriginalShape.width);
+    // coords.y = std::clamp(coords.y, 0, imageOriginalShape.height);
+    // coords.width = std::clamp(coords.width, 0, imageOriginalShape.width);
+    // coords.height = std::clamp(coords.height, 0, imageOriginalShape.height);
 }

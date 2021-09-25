@@ -11,8 +11,8 @@ int main(int argc, char* argv[])
     const float confThreshold = 0.4f;
     const float iouThreshold = 0.4f;
 
-    std::string modelPath = "yolov5s.onnx";
-    std::string imagePath = "bus.jpg";
+    std::string modelPath = "yolov5m.onnx";
+    std::string imagePath = "zidane.jpg";
     std::string classNamesPath = "coco.names";
 
     if (argc == 4)
@@ -24,7 +24,16 @@ int main(int argc, char* argv[])
 
     std::vector<std::string> classNames = utils::loadNames(classNamesPath);
 
-    Yolov5Detector detector(modelPath, true, cv::Size(640, 640));
+    Yolov5Detector detector {nullptr};
+    try
+    {
+        detector = Yolov5Detector(modelPath, true, cv::Size(640, 640));
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << std::endl;
+        return -1;
+    }
 
     cv::Mat image = cv::imread(imagePath);
     std::vector<Detection> result = detector.detect(image, confThreshold, iouThreshold);

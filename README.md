@@ -26,8 +26,7 @@ To run the executable you should add OpenCV and ONNX Runtime libraries to your e
 
 Run from CLI:
 ```bash
-# ./yolov5_ort path_to_onnx_model path_to_class_names path_to_image
-./yolov5_ort ../models/yolov5.onnx ../models/coco.names ../images/bus.jpg
+./yolo_ort --model_path yolov5.onnx --image bus.jpg --class_names coco.names --gpu
 ```
 
 ## Demo

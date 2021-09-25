@@ -24,10 +24,10 @@ int main(int argc, char* argv[])
 
     std::vector<std::string> classNames = utils::loadNames(classNamesPath);
 
-    Yolov5Detector detector {nullptr};
+    YOLODetector detector {nullptr};
     try
     {
-        detector = Yolov5Detector(modelPath, true, cv::Size(640, 640));
+        detector = YOLODetector(modelPath, true, cv::Size(640, 640));
     }
     catch(const std::exception& e)
     {

@@ -6,11 +6,11 @@
 #include "utils.h"
 
 
-class Yolov5Detector
+class YOLODetector
 {
 public:
-    explicit Yolov5Detector(std::nullptr_t) {};
-    Yolov5Detector(const std::string& modelPath,
+    explicit YOLODetector(std::nullptr_t) {};
+    YOLODetector(const std::string& modelPath,
                    const bool& isGPU,
                    const cv::Size& inputSize);
 

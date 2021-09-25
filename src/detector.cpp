@@ -1,6 +1,6 @@
 #include "detector.h"
 
-Yolov5Detector::Yolov5Detector(const std::string& modelPath, const bool& isGPU = true, const cv::Size& inputSize = cv::Size(640, 640))
+YOLODetector::YOLODetector(const std::string& modelPath, const bool& isGPU = true, const cv::Size& inputSize = cv::Size(640, 640))
 {
     env = Ort::Env(OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING, "ONNX_DETECTION");
     sessionOptions = Ort::SessionOptions();
@@ -55,7 +55,7 @@ Yolov5Detector::Yolov5Detector(const std::string& modelPath, const bool& isGPU =
     this->inputImageShape = cv::Size2f(inputSize);
 }
 
-void Yolov5Detector::getBestClassInfo(std::vector<float>::iterator it, const int& numClasses,
+void YOLODetector::getBestClassInfo(std::vector<float>::iterator it, const int& numClasses,
                                       float& bestConf, int& bestClassId)
 {
     // first 5 element are box and obj confidence
@@ -73,7 +73,7 @@ void Yolov5Detector::getBestClassInfo(std::vector<float>::iterator it, const int
 
 }
 
-void Yolov5Detector::preprocessing(cv::Mat &image, float*& blob, std::vector<int64_t>& inputTensorShape)
+void YOLODetector::preprocessing(cv::Mat &image, float*& blob, std::vector<int64_t>& inputTensorShape)
 {
     cv::Mat resizedImage, floatImage;
     cv::cvtColor(image, resizedImage, cv::COLOR_BGR2RGB);
@@ -97,7 +97,7 @@ void Yolov5Detector::preprocessing(cv::Mat &image, float*& blob, std::vector<int
     cv::split(floatImage, chw);
 }
 
-std::vector<Detection> Yolov5Detector::postprocessing(const cv::Size& resizedImageShape,
+std::vector<Detection> YOLODetector::postprocessing(const cv::Size& resizedImageShape,
                                                       const cv::Size& originalImageShape,
                                                       std::vector<Ort::Value>& outputTensors,
                                                       const float& confThreshold, const float& iouThreshold)
@@ -164,7 +164,7 @@ std::vector<Detection> Yolov5Detector::postprocessing(const cv::Size& resizedIma
     return detections;
 }
 
-std::vector<Detection> Yolov5Detector::detect(cv::Mat &image, const float& confThreshold = 0.4,
+std::vector<Detection> YOLODetector::detect(cv::Mat &image, const float& confThreshold = 0.4,
                                               const float& iouThreshold = 0.45)
 {
     float *blob = nullptr;

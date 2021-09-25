@@ -56,7 +56,7 @@ YOLODetector::YOLODetector(const std::string& modelPath, const bool& isGPU = tru
 }
 
 void YOLODetector::getBestClassInfo(std::vector<float>::iterator it, const int& numClasses,
-                                      float& bestConf, int& bestClassId)
+                                    float& bestConf, int& bestClassId)
 {
     // first 5 element are box and obj confidence
     bestClassId = 5;
@@ -98,9 +98,9 @@ void YOLODetector::preprocessing(cv::Mat &image, float*& blob, std::vector<int64
 }
 
 std::vector<Detection> YOLODetector::postprocessing(const cv::Size& resizedImageShape,
-                                                      const cv::Size& originalImageShape,
-                                                      std::vector<Ort::Value>& outputTensors,
-                                                      const float& confThreshold, const float& iouThreshold)
+                                                    const cv::Size& originalImageShape,
+                                                    std::vector<Ort::Value>& outputTensors,
+                                                    const float& confThreshold, const float& iouThreshold)
 {
     std::vector<cv::Rect> boxes;
     std::vector<float> confs;
@@ -165,7 +165,7 @@ std::vector<Detection> YOLODetector::postprocessing(const cv::Size& resizedImage
 }
 
 std::vector<Detection> YOLODetector::detect(cv::Mat &image, const float& confThreshold = 0.4,
-                                              const float& iouThreshold = 0.45)
+                                            const float& iouThreshold = 0.45)
 {
     float *blob = nullptr;
     std::vector<int64_t> inputTensorShape {1, 3, 640, 640};

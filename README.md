@@ -1,6 +1,6 @@
 # yolov5-onnxruntime
 
-C++ YOLO v5 ONNX Runtime inference code.
+C++ YOLO v5 ONNX Runtime inference code for object detection.
 
 ## Dependecies:
 - OpenCV 4.5+

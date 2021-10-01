@@ -170,7 +170,7 @@ std::vector<Detection> YOLODetector::detect(cv::Mat &image, const float& confThr
                                             const float& iouThreshold = 0.45)
 {
     float *blob = nullptr;
-    std::vector<int64_t> inputTensorShape {1, 3, 640, 640};
+    std::vector<int64_t> inputTensorShape {1, 3, -1, -1};
     this->preprocessing(image, blob, inputTensorShape);
 
     size_t inputTensorSize = utils::vectorProduct(inputTensorShape);

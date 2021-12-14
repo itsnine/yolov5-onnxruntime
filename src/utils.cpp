@@ -56,7 +56,7 @@ void utils::visualizeDetection(cv::Mat& image, std::vector<Detection>& detection
         int x = detection.box.x;
         int y = detection.box.y;
 
-        int conf = (int)(detection.conf * 100);
+        int conf = (int)std::round(detection.conf * 100);
         int classId = detection.classId;
         std::string label = classNames[classId] + " 0." + std::to_string(conf);
 

@@ -79,7 +79,7 @@ void YOLODetector::preprocessing(cv::Mat &image, float*& blob, std::vector<int64
 {
     cv::Mat resizedImage, floatImage;
     cv::cvtColor(image, resizedImage, cv::COLOR_BGR2RGB);
-    utils::letterbox(image, resizedImage, this->inputImageShape,
+    utils::letterbox(resizedImage, resizedImage, this->inputImageShape,
                      cv::Scalar(114, 114, 114), this->isDynamicInputShape,
                      false, true, 32);
 

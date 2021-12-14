@@ -9,10 +9,9 @@ find_package(OpenCV REQUIRED)
 include_directories("include/")
 
 add_executable(yolo_ort
-               src/example.cpp
+               src/main.cpp
                src/detector.cpp
                src/utils.cpp)
-
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

@@ -113,8 +113,8 @@ std::vector<Detection> YOLODetector::postprocessing(const cv::Size& resizedImage
     size_t count = outputTensors[0].GetTensorTypeAndShapeInfo().GetElementCount();
     std::vector<float> output(rawOutput, rawOutput + count);
 
-    for (const int64_t& shape : outputShape)
-        std::cout << "Output Shape: " << shape << std::endl;
+    // for (const int64_t& shape : outputShape)
+    //     std::cout << "Output Shape: " << shape << std::endl;
 
     // first 5 elements are box[4] and obj confidence
     int numClasses = (int)outputShape[2] - 5;
@@ -148,7 +148,7 @@ std::vector<Detection> YOLODetector::postprocessing(const cv::Size& resizedImage
 
     std::vector<int> indices;
     cv::dnn::NMSBoxes(boxes, confs, confThreshold, iouThreshold, indices);
-    std::cout << "amount of NMS indices: " << indices.size() << std::endl;
+    // std::cout << "amount of NMS indices: " << indices.size() << std::endl;
 
     std::vector<Detection> detections;
 
@@ -174,7 +174,7 @@ std::vector<Detection> YOLODetector::detect(cv::Mat &image, const float& confThr
     this->preprocessing(image, blob, inputTensorShape);
 
     size_t inputTensorSize = utils::vectorProduct(inputTensorShape);
-    std::cout << "inputTensorSize: " << inputTensorSize << std::endl;
+
     std::vector<float> inputTensorValues(blob, blob + inputTensorSize);
 
     std::vector<Ort::Value> inputTensors;

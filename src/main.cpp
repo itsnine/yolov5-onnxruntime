@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
     {
         detector = YOLODetector(modelPath, isGPU, cv::Size(640, 640));
         std::cout << "Model was initialized." << std::endl;
-    
+
         image = cv::imread(imagePath);
         result = detector.detect(image, confThreshold, iouThreshold);
     }

@@ -15,7 +15,7 @@ To build the project you should run the following commands, don't forget to chan
 ```bash
 mkdir build
 cd build
-cmake .. -DONNXRUNTIME_DIR=path_to_onnxruntime
+cmake .. -DONNXRUNTIME_DIR=path_to_onnxruntime -DCMAKE_BUILD_TYPE=Release
 cmake --build .
 ```
 

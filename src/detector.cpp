@@ -48,8 +48,15 @@ YOLODetector::YOLODetector(const std::string& modelPath,
     for (auto shape : inputTensorShape)
         std::cout << "Input shape: " << shape << std::endl;
 
-    inputNames.push_back(session.GetInputName(0, allocator));
-    outputNames.push_back(session.GetOutputName(0, allocator));
+    // inputNames.push_back(session.GetInputName(0, allocator));
+    // outputNames.push_back(session.GetOutputName(0, allocator));
+    auto input_name = session.GetInputNameAllocated(0, allocator);
+    inputNodeNameAllocatedStrings.push_back(std::move(input_name));
+    inputNames.push_back(inputNodeNameAllocatedStrings.back().get());
+
+    auto output_name = session.GetOutputNameAllocated(0, allocator);
+    outputNodeNameAllocatedStrings.push_back(std::move(output_name));
+    outputNames.push_back(outputNodeNameAllocatedStrings.back().get());
 
     std::cout << "Input name: " << inputNames[0] << std::endl;
     std::cout << "Output name: " << outputNames[0] << std::endl;

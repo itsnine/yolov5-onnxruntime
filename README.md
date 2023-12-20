@@ -4,8 +4,8 @@ C++ YOLO v5 ONNX Runtime inference code for object detection.
 
 ## Dependecies:
 - OpenCV 4.x
-- ONNXRuntime 1.7+
-- OS: Tested on Windows 10 and Ubuntu 20.04
+- ONNXRuntime 1.15+
+- OS: Tested on centos8 archlinux
 - CUDA 11+ [Optional]
 
 

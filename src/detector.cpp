@@ -2,13 +2,16 @@
 
 YOLODetector::YOLODetector(const std::string& modelPath,
                            const bool& isGPU = true,
+                           const bool& enPerf = false,
                            const cv::Size& inputSize = cv::Size(640, 640))
 {
     env = Ort::Env(OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING, "ONNX_DETECTION");
     sessionOptions = Ort::SessionOptions();
-#ifdef ENABLE_PERF
-    sessionOptions.EnableProfiling("profile_file.json");
-#endif
+
+    if (enPerf) {
+        std::cout<<"Enable profiling\n";
+        sessionOptions.EnableProfiling("profile_file_yolov5.json");
+    }
 
     std::vector<std::string> availableProviders = Ort::GetAvailableProviders();
     auto cudaAvailable = std::find(availableProviders.begin(), availableProviders.end(), "CUDAExecutionProvider");

@@ -25,10 +25,12 @@ int main(int argc, char *argv[]) {
     cmd.add<std::string>("video", 'v', "video dev node or file to be detected.", false);
     cmd.add<std::string>("class_names", 'c', "Path to class names file.", true, "coco.names");
     cmd.add("gpu", '\0', "Inference on cuda device.");
+    cmd.add("perf", '\0', "enable profile");
 
     cmd.parse_check(argc, argv);
 
     bool isGPU = cmd.exist("gpu");
+    bool enPerf = cmd.exist("perf");
     const std::string classNamesPath = cmd.get<std::string>("class_names");
     const std::vector<std::string> classNames = utils::loadNames(classNamesPath);
     const std::string imagePath = cmd.get<std::string>("image");
@@ -50,7 +52,7 @@ int main(int argc, char *argv[]) {
     std::vector<Detection> result;
 
     try {
-        detector = YOLODetector(modelPath, isGPU, cv::Size(640, 640));
+        detector = YOLODetector(modelPath, isGPU, enPerf, cv::Size(640, 640));
         std::cout << "Model was initialized." << std::endl;
     } catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
@@ -59,16 +61,16 @@ int main(int argc, char *argv[]) {
 
     if (!imagePath.empty()) {
         image = cv::imread(imagePath);
-#ifdef ENABLE_PERF
-        auto start = std::chrono::high_resolution_clock::now();
-        result = detector.detect(image, confThreshold, iouThreshold);
-        auto end = std::chrono::high_resolution_clock::now();
+        if(enPerf){
+            auto start = std::chrono::high_resolution_clock::now();
+            result = detector.detect(image, confThreshold, iouThreshold);
+            auto end = std::chrono::high_resolution_clock::now();
 
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        std::cout << "Execution time: " << duration.count() << " ms" << std::endl;
-#else 
-        result = detector.detect(image, confThreshold, iouThreshold);
-#endif
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+            std::cout << "Execution time: " << duration.count() << " ms" << std::endl;
+        }else{ 
+            result = detector.detect(image, confThreshold, iouThreshold);
+        }
         utils::visualizeDetection(image, result, classNames);
         cv::imshow("result", image);
         // cv::imwrite("result.jpg", image);
@@ -88,17 +90,17 @@ int main(int argc, char *argv[]) {
                 continue;
             }
 
-#ifdef ENABLE_PERF
-            auto start_time = std::chrono::high_resolution_clock::now();
-            result = detector.detect(frame, confThreshold, iouThreshold);
-            utils::visualizeDetection(frame, result, classNames);
-            auto end_time = std::chrono::high_resolution_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-            std::cout << "Execution time: " << duration.count() << " ms." << std::endl;
-#else 
-            result = detector.detect(frame, confThreshold, iouThreshold);
-            utils::visualizeDetection(frame, result, classNames);
-#endif
+            if(enPerf){
+                auto start_time = std::chrono::high_resolution_clock::now();
+                result = detector.detect(frame, confThreshold, iouThreshold);
+                utils::visualizeDetection(frame, result, classNames);
+                auto end_time = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+                std::cout << "Execution time: " << duration.count() << " ms." << std::endl;
+            }else{
+                result = detector.detect(frame, confThreshold, iouThreshold);
+                utils::visualizeDetection(frame, result, classNames);
+            }
 
             cv::imshow("result", frame);
             cv::waitKey(10);

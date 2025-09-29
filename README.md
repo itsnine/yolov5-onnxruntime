@@ -4,21 +4,31 @@ C++ YOLO v5 ONNX Runtime inference code for object detection.
 
 ## Dependecies:
 - OpenCV 4.x
-- ONNXRuntime 1.7+
-- OS: Tested on Windows 10 and Ubuntu 20.04
+- ONNXRuntime 1.15+
+- OS: Tested on centos8 archlinux
 - CUDA 11+ [Optional]
 
 
 ## Build
-To build the project you should run the following commands, don't forget to change `ONNXRUNTIME_DIR` cmake option:
+To build the project you should run the following commands, don't forget to change `ORT_INSTALL_DIR` cmake option:
 
 ```bash
 mkdir build
 cd build
-cmake .. -DONNXRUNTIME_DIR=path_to_onnxruntime -DCMAKE_BUILD_TYPE=Release
+cmake .. -DORT_INSTALL_DIR=[path_to_onnxruntime_install_dir] -DCMAKE_BUILD_TYPE=RelWithDebInfo
 cmake --build .
 ```
 
+#### cmake options:  
+- ENABLE_PERF  
+Enabling this will output per-image inference elapsed time, as well as generate profile_filexxx.json performance statistics, which you can visualize in [Perfetto UI](https://www.ui.perfetto.dev/) 
+- ENABLE_OCL  
+Enable opencl ep probing  
+
+example:
+```
+cmake .. -DORT_INSTALL_DIR=[path_to_onnxruntime_src] -DCMAKE_BUILD_TYPE=RelWithDebInfo -DENABLE_PERF=ON -DENABLE_OCL=ON
+```
 ## Run
 Before running the executable you should convert your PyTorch model to ONNX if you haven't done it yet. Check the [official tutorial](https://github.com/ultralytics/yolov5/issues/251).
 
@@ -26,7 +36,7 @@ Before running the executable you should convert your PyTorch model to ONNX if y
 
 Run from CLI:
 ```bash
-./yolo_ort --model_path yolov5.onnx --image bus.jpg --class_names coco.names --gpu
+./yolo_ort --model_path ../models/yolov5s.onnx --class_names ../models/coco.names --image ../images/bus.jpg --gpu
 # On Windows ./yolo_ort.exe with arguments as above
 ```
 

@@ -2,30 +2,45 @@
 
 YOLODetector::YOLODetector(const std::string& modelPath,
                            const bool& isGPU = true,
+                           const bool& enPerf = false,
                            const cv::Size& inputSize = cv::Size(640, 640))
 {
     env = Ort::Env(OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING, "ONNX_DETECTION");
     sessionOptions = Ort::SessionOptions();
 
+    if (enPerf) {
+        std::cout<<"Enable profiling\n";
+        sessionOptions.EnableProfiling("profile_file_yolov5.json");
+    }
+
     std::vector<std::string> availableProviders = Ort::GetAvailableProviders();
     auto cudaAvailable = std::find(availableProviders.begin(), availableProviders.end(), "CUDAExecutionProvider");
+    auto rocmAvailable = std::find(availableProviders.begin(), availableProviders.end(), "ROCMExecutionProvider");
+    auto oclAvailable = std::find(availableProviders.begin(), availableProviders.end(), "OpenCLExecutionProvider");
     OrtCUDAProviderOptions cudaOption;
+    OrtROCMProviderOptions rocmOption;
 
-    if (isGPU && (cudaAvailable == availableProviders.end()))
+    if (isGPU && (cudaAvailable != availableProviders.end()))
     {
-        std::cout << "GPU is not supported by your ONNXRuntime build. Fallback to CPU." << std::endl;
-        std::cout << "Inference device: CPU" << std::endl;
-    }
-    else if (isGPU && (cudaAvailable != availableProviders.end()))
-    {
-        std::cout << "Inference device: GPU" << std::endl;
+        std::cout << "Inference device: CUDA GPU" << std::endl;
         sessionOptions.AppendExecutionProvider_CUDA(cudaOption);
     }
+    else if (isGPU && (rocmAvailable != availableProviders.end()))
+    {
+        std::cout << "Inference device: ROCM GPU" << std::endl;
+        sessionOptions.AppendExecutionProvider_ROCM(rocmOption);
+    }
+#ifdef ENABLE_OCL
+    else if (isGPU &&(oclAvailable != availableProviders.end()))
+    {
+        std::cout << "Inference device: OPENCL GPU" << std::endl;
+        Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_OpenCL(sessionOptions, 0, 0));
+    }
+#endif
     else
     {
         std::cout << "Inference device: CPU" << std::endl;
     }
-
 #ifdef _WIN32
     std::wstring w_modelPath = utils::charToWstring(modelPath.c_str());
     session = Ort::Session(env, w_modelPath.c_str(), sessionOptions);
@@ -48,8 +63,15 @@ YOLODetector::YOLODetector(const std::string& modelPath,
     for (auto shape : inputTensorShape)
         std::cout << "Input shape: " << shape << std::endl;
 
-    inputNames.push_back(session.GetInputName(0, allocator));
-    outputNames.push_back(session.GetOutputName(0, allocator));
+    // inputNames.push_back(session.GetInputName(0, allocator));
+    // outputNames.push_back(session.GetOutputName(0, allocator));
+    auto input_name = session.GetInputNameAllocated(0, allocator);
+    inputNodeNameAllocatedStrings.push_back(std::move(input_name));
+    inputNames.push_back(inputNodeNameAllocatedStrings.back().get());
+
+    auto output_name = session.GetOutputNameAllocated(0, allocator);
+    outputNodeNameAllocatedStrings.push_back(std::move(output_name));
+    outputNames.push_back(outputNodeNameAllocatedStrings.back().get());
 
     std::cout << "Input name: " << inputNames[0] << std::endl;
     std::cout << "Output name: " << outputNames[0] << std::endl;
@@ -97,6 +119,65 @@ void YOLODetector::preprocessing(cv::Mat &image, float*& blob, std::vector<int64
         chw[i] = cv::Mat(floatImageSize, CV_32FC1, blob + i * floatImageSize.width * floatImageSize.height);
     }
     cv::split(floatImage, chw);
+}
+
+static float calculateIoU(const cv::Rect& rect1, const cv::Rect& rect2) {
+    // 计算交集坐标
+    int x1 = std::max(rect1.x, rect2.x);
+    int y1 = std::max(rect1.y, rect2.y);
+    int x2 = std::min(rect1.x + rect1.width, rect2.x + rect2.width);
+    int y2 = std::min(rect1.y + rect1.height, rect2.y + rect2.height);
+
+    // 计算交集面积
+    int interArea = std::max(0, x2 - x1) * std::max(0, y2 - y1);
+
+    // 计算并集面积
+    float unionArea = rect1.area() + rect2.area() - interArea;
+
+    // 避免除以零
+    return (unionArea > 0) ? (interArea / unionArea) : 0.0f;
+}
+
+// 自定义NMS实现
+void NMSBoxes(
+    const std::vector<cv::Rect>& bboxes,
+    const std::vector<float>& scores,
+    float score_threshold,
+    float nms_threshold,
+    std::vector<int>& indices
+) {
+    indices.clear();
+
+    // 第一步：按置信度过滤边界框
+    std::vector<int> idxs;
+    for (int i = 0; i < scores.size(); ++i) {
+        if (scores[i] >= score_threshold) {
+            idxs.push_back(i);
+        }
+    }
+
+    // 第二步：按置信度降序排序
+    std::sort(idxs.begin(), idxs.end(), [&](int a, int b) {
+        return scores[a] > scores[b];
+    });
+
+    // 第三步：NMS处理
+    std::vector<bool> suppressed(idxs.size(), false);
+    for (int i = 0; i < idxs.size(); ++i) {
+        if (suppressed[i]) continue;
+
+        indices.push_back(idxs[i]);  // 保留当前框
+
+        for (int j = i + 1; j < idxs.size(); ++j) {
+            if (suppressed[j]) continue;
+
+            // 计算IoU并抑制重叠框
+            float iou = calculateIoU(bboxes[idxs[i]], bboxes[idxs[j]]);
+            if (iou >= nms_threshold) {
+                suppressed[j] = true;
+            }
+        }
+    }
 }
 
 std::vector<Detection> YOLODetector::postprocessing(const cv::Size& resizedImageShape,
@@ -147,7 +228,8 @@ std::vector<Detection> YOLODetector::postprocessing(const cv::Size& resizedImage
     }
 
     std::vector<int> indices;
-    cv::dnn::NMSBoxes(boxes, confs, confThreshold, iouThreshold, indices);
+    NMSBoxes(boxes, confs, confThreshold, iouThreshold, indices);
+    // cv::dnn::NMSBoxes(boxes, confs, confThreshold, iouThreshold, indices);
     // std::cout << "amount of NMS indices: " << indices.size() << std::endl;
 
     std::vector<Detection> detections;
